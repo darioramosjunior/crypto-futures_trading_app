@@ -1,11 +1,12 @@
 import pandas as pd
+from decimal import Decimal
 
 path = r"C:\Users\ramosd\Desktop\Python Projects\Personal Projects\Desktop_TradingApp\Binance Export - Aug 2023.xlsx"
 
 orig_df = pd.read_excel(path, sheet_name="sheet1")
 
 
-class EntryOrder():
+class EntryOrder:
     def __init__(self, date, symbol, side, aep, units, total_cost):
         self.date = date
         self.symbol = symbol
@@ -15,7 +16,7 @@ class EntryOrder():
         self.total_cost = total_cost
 
 
-class ExitOrder():
+class ExitOrder:
     def __init__(self, date, symbol, side, axp, units, total_proceeds):
         self.date = date
         self.symbol = symbol
@@ -25,7 +26,7 @@ class ExitOrder():
         self.total_proceeds = total_proceeds
 
 
-class Trade():
+class Trade:
     def __init__(self, entry_date, exit_date, aep, axp, net_result, net_result_percent, total_units, total_cost,
                  total_proceeds):
         self.entry_date = entry_date
@@ -36,64 +37,91 @@ class Trade():
         self.net_result_percent = net_result_percent
         self.total_units = total_units
         self.total_cost = total_cost
+        self.total_proceeds = total_proceeds
 
 
-orders = []
+def get_row_values(row):
+    keys = ['date', 'index', 'symbol', 'side', 'price', 'quantity', 'amount', 'fee', 'profit']
+    row_date = row['Date(UTC)'].values[0]
+    row_index = row.index.values[0]
+    row_symbol = row['Symbol'].values[0]
+    row_side = row['Side'].values[0]
+    row_price = row['Price'].values[0]
+    row_quantity = row['Quantity'].values[0]
+    row_amount = row['Amount'].values[0]
+    row_fee = row['Fee'].values[0]
+    row_profit = row['Realized Profit'].values[0]
+    values = [row_date, row_index, row_symbol, row_side, row_price, row_quantity, row_amount, row_fee, row_profit]
+
+    row_dict = {keys[i]: values[i] for i in range(len(keys))}
+    return row_dict
 
 
-for id, row in orig_df.iterrows():
-    if row['Realized Profit'] != 0:
-        orders.append({"id": id, "coin": f"{row['Symbol']}-{row['Side']}", "Order": "Exit", "Exit_obj": ExitOrder(row['Date(UTC)'],
-                                                                                               row['Symbol'],
-                                                                                               row['Side'],
-                                                                                               row['Price'],
-                                                                                               row['Quantity'],
-                                                                                               (row['Amount'] +
-                                                                                               row['Fee']))})
+def get_filtered_row_values(row):
+    keys = ['date', 'index', 'symbol', 'side', 'price', 'quantity', 'amount', 'fee', 'profit']
+    row_date = row[1]['Date(UTC)']
+    row_index = row[0]
+    row_symbol = row[1]['Symbol']
+    row_side = row[1]['Side']
+    row_price = row[1]['Price']
+    row_quantity = row[1]['Quantity']
+    row_amount = row[1]['Amount']
+    row_fee = row[1]['Fee']
+    row_profit = row[1]['Realized Profit']
+    values = [row_date, row_index, row_symbol, row_side, row_price, row_quantity, row_amount, row_fee, row_profit]
+
+    row_dict = {keys[i]: values[i] for i in range(len(keys))}
+    return row_dict
+
+
+def calculate_trades(df):
+    rows_to_delete = []
+
+    if not df.empty:
+        first_row = df.head(1)
+        first_row_values = get_row_values(first_row)
+        rows_to_delete.append(first_row_values['index'])
+        quantity = first_row_values['quantity']
+        print('Exit Trade:', first_row_values)
+
+        filtered_df = df[(df['Symbol'] == first_row_values['symbol']) & (df.index > first_row_values['index'])]
+
+        # To offset precision issues in floating point numbers
+        epsilon= 1e-9
+
+        while abs(quantity) > epsilon:
+            for filtered_row in filtered_df.iterrows():
+                filtered_row_values = get_filtered_row_values(filtered_row)
+
+                if filtered_row_values['side'] == first_row_values['side']:
+                    print('Exit Trade:', filtered_row_values)
+                    quantity = quantity + filtered_row_values['quantity']
+                    rows_to_delete.append(filtered_row_values['index'])
+                else:
+                    print('Entry Trade:', filtered_row_values)
+                    quantity = quantity - filtered_row_values['quantity']
+                    rows_to_delete.append(filtered_row_values['index'])
+
+                    if abs(quantity) < epsilon:
+                        print("=============================================")
+                        break
+
+        return rows_to_delete
     else:
-        orders.append({"id": id, "coin": f"{row['Symbol']}-{row['Side']}", "Order": "Entry", "Entry_obj": EntryOrder(row['Date(UTC)'],
-                                                                                                  row['Symbol'],
-                                                                                                  row['Side'],
-                                                                                                  row['Price'],
-                                                                                                  row['Quantity'],
-                                                                                                  (row['Amount'] -
-                                                                                                   row['Fee']))})
-
-[print(each) for each in orders]
-
-trades = []
-
-exit_quantity = 0
-net_return = 0
-
-coin_temporary = ""
-
-for index, each in enumerate(orders):
-    if each['Order'] == 'Exit':
-        exit_quantity = exit_quantity + each['Exit_obj'].units
-        net_return = net_return + each['Exit_obj'].total_proceeds
-        coin_temporary = each['coin']
-    else:
-        exit_quantity = exit_quantity - each['Entry_obj'].units
-        if exit_quantity != 0:
-            pass
+        return rows_to_delete
 
 
-# entry_orders = []
-# exit_orders = []
+condition = True
 
-# for each in orders:
-#     if each['Order'] == 'Exit':
-#         exit_orders.append(each)
-#     elif each['Order'] == 'Entry':
-#         entry_orders.append(each)
-#
-# [print(each) for each in exit_orders]
-# [print(each) for each in entry_orders]
-#
-# for exit in exit_orders:
-#     exit_quantity = exit['Exit_obj'].units
-#     exit_coin = exit['coin']
-#     print(exit_coin, exit_quantity)
-    # for entry in entry_orders:
+while condition:
+    num_rows = len(orig_df)
+    print("=====================")
+
+    if not (num_rows > 2):
+        condition = False
+        break
+
+    current_rows_to_delete = calculate_trades(orig_df)
+    orig_df = orig_df.drop(current_rows_to_delete)
+
 
