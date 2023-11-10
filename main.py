@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QTabBar  # Import QTabBar
 from watchlist_tab import WatchlistTab
 from analytics_tab import AnalyticsTab
 from news_tab import NewsTab
+from trades_tab import TradesTab
 from database import Database
 
 database = Database()
@@ -14,7 +15,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Crypto Futures Trading App")
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(1250, 600)
 
         # Create a central widget
         central_widget = QWidget()
@@ -30,13 +31,16 @@ class MainWindow(QMainWindow):
         watchlist_tab = WatchlistTab()
         analytics_tab = AnalyticsTab()
         news_tab = NewsTab()
+        trades_tab = TradesTab()
 
         tab_widget.addTab(watchlist_tab, "Watchlist")
         tab_widget.addTab(news_tab, "News")
+        tab_widget.addTab(trades_tab, "Trades")
         tab_widget.addTab(analytics_tab, "Performance")
 
         # Style the tab bar to make tab titles visible
         tab_bar = tab_widget.tabBar()
+
         tab_bar.setStyleSheet("""
             QTabBar::tab {
                 background-color: #404040;
@@ -70,7 +74,7 @@ class MainWindow(QMainWindow):
             QPushButton:hover {
                 background-color: #555555;
             }
-            QLineEdit, QComboBox, QLabel {
+            QLineEdit, QComboBox, QLabel, QTableWidget {
                 background-color: #404040;
                 color: #FFFFFF;
                 border: 1px solid black;
