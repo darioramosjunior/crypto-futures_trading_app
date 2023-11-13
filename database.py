@@ -18,6 +18,11 @@ class Database:
                 cut_percentage REAL,
                 position_size REAL)''')
         self.connection.commit()
-        self.connection.close()
+
+    def create_trades_table(self):
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS trades (id INTEGER PRIMARY KEY, entry_date TEXT, 
+                exit_date TEXT, ticker TEXT, side TEXT, aep REAL, axp REAL, quantity REAL, cost REAL, proceed REAL, 
+                net_gain REAL, percent_gain REAL)''')
+        self.connection.commit()
 
 

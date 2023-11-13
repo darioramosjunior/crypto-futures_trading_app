@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFileDialog, QTab
     QTableWidgetItem
 from PyQt6.QtCore import Qt
 from trades import get_trades
+from database import Database
+import threading
 
 file_path = ""
 
@@ -44,8 +46,14 @@ class FileSelector(QWidget):
         print(self.label.text())
         trades = get_trades(path=self.label.text())
 
-        # Execute trades tab objects' fill_rows_table_widget method
-        self.trades_tab.fill_rows_table_widget(trades)
+        if trades:
+            self.trades_tab.clear_table()
+            self.trades_tab.clear_trades_db()
+
+            # Execute trades tab objects' fill_rows_table_widget method
+            self.trades_tab.store_to_database(trades)
+            self.trades_tab.fill_rows_table_widget()
+
 
 class TradesTab(QWidget):
     def __init__(self):
@@ -66,23 +74,29 @@ class TradesTab(QWidget):
 
         layout.addWidget(file_selector)
         layout.addWidget(self.table_widget)
+        self.fill_rows_table_widget()
 
         self.setLayout(layout)
 
-    def fill_rows_table_widget(self, trades):
+    def fill_rows_table_widget(self):
+        database = Database()
+        database.cursor.execute('SELECT * FROM trades')
+        trades = database.cursor.fetchall()
+        print(trades)
+
         self.table_widget.setRowCount(len(trades))
-        for row_index, trade_object in enumerate(trades):
-            column0 = QTableWidgetItem(trade_object.entry_date)
-            column1 = QTableWidgetItem(trade_object.exit_date)
-            column2 = QTableWidgetItem(trade_object.symbol)
-            column3 = QTableWidgetItem(trade_object.trade_type)
-            column4 = QTableWidgetItem("{:.6f}".format(trade_object.aep))
-            column5 = QTableWidgetItem("{:.6f}".format(trade_object.axp))
-            column6 = QTableWidgetItem("{:.2f}".format(trade_object.total_units))
-            column7 = QTableWidgetItem("{:.2f}".format(trade_object.total_cost))
-            column8 = QTableWidgetItem("{:.2f}".format(trade_object.total_proceeds))
-            column9 = QTableWidgetItem("{:.3f}".format(trade_object.net_result))
-            column10 = QTableWidgetItem("{:.2f}".format(trade_object.percent_return))
+        for row_index, trade in enumerate(trades):
+            column0 = QTableWidgetItem(trade[1])
+            column1 = QTableWidgetItem(trade[2])
+            column2 = QTableWidgetItem(trade[3])
+            column3 = QTableWidgetItem(trade[4])
+            column4 = QTableWidgetItem("{:.6f}".format(trade[5]))
+            column5 = QTableWidgetItem("{:.6f}".format(trade[6]))
+            column6 = QTableWidgetItem("{:.2f}".format(trade[7]))
+            column7 = QTableWidgetItem("{:.2f}".format(trade[8]))
+            column8 = QTableWidgetItem("{:.2f}".format(trade[9]))
+            column9 = QTableWidgetItem("{:.3f}".format(trade[10]))
+            column10 = QTableWidgetItem("{:.2f}".format(trade[11]))
 
             column0.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             column1.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -108,6 +122,26 @@ class TradesTab(QWidget):
             self.table_widget.setItem(row_index, 9, column9)
             self.table_widget.setItem(row_index, 10, column10)
 
+    def store_to_database(self, trades):
+        database = Database()
+        for trade in trades:
+            data_to_insert = (trade.entry_date, trade.exit_date, trade.symbol, trade.trade_type, trade.aep, trade.axp,
+                              trade.total_units, trade.total_cost, trade.total_proceeds, trade.net_result,
+                              trade.percent_return)
+
+            database.cursor.execute("INSERT INTO trades (entry_date, exit_date, ticker, side, aep, axp, quantity, cost,"
+                                    " proceed, net_gain, percent_gain) VALUES (?,?,?,?,?,?,?,?,?,?,?)", data_to_insert)
+        database.connection.commit()
+        database.connection.close()
+
+    def clear_table(self):
+        self.table_widget.setRowCount(0)
+
+    def clear_trades_db(self):
+        database = Database()
+        database.cursor.execute("DELETE FROM trades")
+        database.connection.commit()
+        database.connection.close()
 
 
 

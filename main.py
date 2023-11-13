@@ -1,13 +1,14 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QVBoxLayout
-from PyQt6.QtWidgets import QTabBar  # Import QTabBar
-from watchlist_tab import WatchlistTab
-from analytics_tab import AnalyticsTab
-from news_tab import NewsTab
-from trades_tab import TradesTab
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout
+from tabs.watchlist_tab import WatchlistTab
+from tabs.analytics_tab import AnalyticsTab
+from tabs.news_tab import NewsTab
+from tabs.trades_tab import TradesTab
 from database import Database
 
 database = Database()
 database.create_watchlist_table()
+database.create_trades_table()
+database.connection.close()
 
 
 class MainWindow(QMainWindow):
