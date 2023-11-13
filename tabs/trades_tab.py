@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFileDialog, QTableWidget, QHBoxLayout, QLineEdit, \
-    QTableWidgetItem
+    QTableWidgetItem, QLabel
 from PyQt6.QtCore import Qt
 from trades import get_trades
 from database import Database
@@ -21,14 +21,21 @@ class FileSelector(QWidget):
         self.label = QLineEdit("--- File Path ---")
         self.label.setReadOnly(True)
 
+        self.start_port_label = QLabel("Starting Portfolio")
+        self.start_port = QLineEdit()
+
         self.file_dialog = QFileDialog()
 
         # Connections
         self.button.clicked.connect(self.open_file_selector)
         self.label.textChanged.connect(self.get_trades_list)
+        self.label.textChanged.connect(self.calculate_port_effects)
+        self.start_port.textChanged.connect(self.calculate_port_effects)
 
         layout.addWidget(self.button)
-        layout.addWidget(self.label)
+        layout.addWidget(self.label, stretch=2)
+        layout.addWidget(self.start_port_label)
+        layout.addWidget(self.start_port)
 
         self.setLayout(layout)
 
@@ -57,6 +64,12 @@ class FileSelector(QWidget):
             self.trades_tab.store_to_database(trades)
             self.trades_tab.fill_rows_table_widget()
 
+    def calculate_port_effects(self):
+        start_port = float(self.start_port.text())
+
+        if start_port:
+            self.trades_tab.calc_port_effects(start_port)
+
 
 class TradesTab(QWidget):
     def __init__(self):
@@ -68,9 +81,9 @@ class TradesTab(QWidget):
 
         # Table Widget
         self.table_widget = QTableWidget()
-        self.table_widget.setColumnCount(12)
+        self.table_widget.setColumnCount(13)
         table_headers = ["Entry Date", "Exit Date", "Ticker", "Side", "AEP", "AXP", "Quantity", "Cost", "Proceed",
-                         "Net Gain", "% Gain", "Port Effect"]
+                         "Net Gain", "% Gain", "New Port", "Port Effect %"]
         self.table_widget.setHorizontalHeaderLabels(table_headers)
         self.table_widget.horizontalHeader().setStyleSheet("::section {background-color: #404040; color: white; "
                                                            "font-weight: bold;}")
@@ -145,5 +158,26 @@ class TradesTab(QWidget):
         database.connection.commit()
         database.connection.close()
 
+    def calc_port_effects(self, start_port):
+        net_gain_column = 9
+        new_port_column = 11
+        port_effect_column = 12
+        old_port = start_port
+        for row in range(self.table_widget.rowCount()):
+            # Get net_gain for particular 'row'
+            net_gain = float(self.table_widget.item(row, net_gain_column).text())
+            new_port = old_port + net_gain
+
+            # Create cell items for
+            new_port_item = QTableWidgetItem("{:.3f}".format(new_port))
+            new_port_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table_widget.setItem(row, new_port_column, new_port_item)
+
+            port_effect = (net_gain / old_port) * 100
+            port_effect_item = QTableWidgetItem("{:.2f}".format(port_effect))
+            port_effect_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table_widget.setItem(row, port_effect_column, port_effect_item)
+
+            old_port = new_port
 
 
