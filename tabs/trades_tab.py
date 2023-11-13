@@ -45,6 +45,9 @@ class FileSelector(QWidget):
     def get_trades_list(self):
         print(self.label.text())
         trades = get_trades(path=self.label.text())
+        trades.reverse()
+        for trade in trades:
+            print(trade.symbol)
 
         if trades:
             self.trades_tab.clear_table()
@@ -82,7 +85,6 @@ class TradesTab(QWidget):
         database = Database()
         database.cursor.execute('SELECT * FROM trades')
         trades = database.cursor.fetchall()
-        print(trades)
 
         self.table_widget.setRowCount(len(trades))
         for row_index, trade in enumerate(trades):

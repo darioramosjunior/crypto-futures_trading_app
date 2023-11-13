@@ -83,7 +83,7 @@ def calculate_trades(df):
         entry_price = []
         entry_quantity = []
 
-        print('Exit Trade:', first_row_values)
+        # print('Exit Trade:', first_row_values)
 
         # Filter succeeding rows with the same symbol
         filtered_df = df[(df['Symbol'] == first_row_values['symbol']) & (df.index > first_row_values['index'])]
@@ -98,7 +98,7 @@ def calculate_trades(df):
                 filtered_row_values = get_filtered_row_values(filtered_row)
 
                 if filtered_row_values['side'] == first_row_values['side']:
-                    print('Exit Trade:', filtered_row_values)
+                    # print('Exit Trade:', filtered_row_values)
 
                     quantity = quantity + filtered_row_values['quantity']
                     total_fees = total_fees + filtered_row_values['fee']
@@ -110,7 +110,7 @@ def calculate_trades(df):
 
                     rows_to_delete.append(filtered_row_values['index'])
                 else:
-                    print('Entry Trade:', filtered_row_values)
+                    # print('Entry Trade:', filtered_row_values)
 
                     quantity = quantity - filtered_row_values['quantity']
                     total_fees = total_fees + filtered_row_values['fee']
@@ -128,12 +128,12 @@ def calculate_trades(df):
                             cost = total_cost + total_fees
                             proceed = total_proceeds
                             total_return = proceed - cost
-                            print("Total return:", total_return)
+                            # print("Total return:", total_return)
                         else:
                             cost = total_proceeds + total_fees
                             proceed = total_cost
                             total_return = proceed - cost
-                            print("Total return:", total_return)
+                            # print("Total return:", total_return)
 
                         exit_date = first_row_values['date'].split(" ")[0]
                         entry_date = filtered_row_values['date'].split(" ")[0]
@@ -165,22 +165,9 @@ def calculate_trades(df):
         return rows_to_delete
 
 
-# condition = True
-#
-# while condition:
-#     num_rows = len(orig_df)
-#
-#     if not (num_rows > 2):
-#         condition = False
-#         break
-#
-#     current_rows_to_delete = calculate_trades(orig_df)
-#     orig_df = orig_df.drop(current_rows_to_delete)
-
 def get_trades(path):
     file_path = rf"{path}"
     orig_df = pd.read_excel(file_path)
-    # trades = []
 
     condition = True
     while condition:
