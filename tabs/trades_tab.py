@@ -8,6 +8,46 @@ import threading
 file_path = ""
 
 
+def store_file_path(path):
+    with open("tabs/configurations.txt", 'r') as file:
+        content = file.readlines()
+    for index, line in enumerate(content):
+        if "File_path:" in line:
+            content[index] = f"File_path:{path}" + "\n"
+
+    with open("tabs/configurations.txt", 'w') as file:
+        file.writelines(content)
+
+
+def get_file_path():
+    with open("tabs/configurations.txt", 'r') as file:
+        content = file.readlines()
+    for line in content:
+        if "File_path:" in line:
+            path = line.split("File_path:")
+            return path
+
+
+def store_port_size(port_size):
+    with open("tabs/configurations.txt", 'r') as file:
+        content = file.readlines()
+    for index, line in enumerate(content):
+        if "Port_size:" in line:
+            content[index] = f"Port_size:{port_size}" + "\n"
+
+    with open("tabs/configurations.txt", 'w') as file:
+        file.writelines(content)
+
+
+def get_port_size():
+    with open("tabs/configurations.txt", 'r') as file:
+        content = file.readlines()
+    for line in content:
+        if "Port_size:" in line:
+            path = line.split("Port_size:")
+            return path
+
+
 class FileSelector(QWidget):
     def __init__(self, trades_tab_object):
         super().__init__()
@@ -21,7 +61,7 @@ class FileSelector(QWidget):
         self.label = QLineEdit("--- File Path ---")
         self.label.setReadOnly(True)
 
-        self.start_port_label = QLabel("Starting Portfolio")
+        self.start_port_label = QLabel("Starting Portfolio $")
         self.start_port = QLineEdit()
 
         self.file_dialog = QFileDialog()
@@ -30,12 +70,17 @@ class FileSelector(QWidget):
         self.button.clicked.connect(self.open_file_selector)
         self.label.textChanged.connect(self.get_trades_list)
         self.label.textChanged.connect(self.calculate_port_effects)
+        self.label.textChanged.connect(self.save_file_path)
         self.start_port.textChanged.connect(self.calculate_port_effects)
+        self.start_port.textChanged.connect(self.save_port_size)
 
         layout.addWidget(self.button)
         layout.addWidget(self.label, stretch=2)
         layout.addWidget(self.start_port_label)
         layout.addWidget(self.start_port)
+
+        self.fill_filepath_thread()
+        self.fill_port_size_thread()
 
         self.setLayout(layout)
 
@@ -65,10 +110,35 @@ class FileSelector(QWidget):
             self.trades_tab.fill_rows_table_widget()
 
     def calculate_port_effects(self):
-        start_port = float(self.start_port.text())
-
-        if start_port:
+        if self.start_port.text() != "":
+            start_port = float(self.start_port.text())
             self.trades_tab.calc_port_effects(start_port)
+
+    def save_file_path(self):
+        path = self.label.text()
+        store_file_path(path)
+
+    def fill_filepath(self):
+        path = get_file_path()
+        path = path[1].replace("\n", "")
+        self.label.setText(path)
+
+    def fill_filepath_thread(self):
+        thread = threading.Thread(target=self.fill_filepath)
+        thread.start()
+
+    def save_port_size(self):
+        port_size = self.start_port.text()
+        store_port_size(port_size)
+
+    def fill_port_size(self):
+        port_size = get_port_size()
+        port_size = port_size[1].replace("\n", "")
+        self.start_port.setText(port_size)
+
+    def fill_port_size_thread(self):
+        thread = threading.Thread(target=self.fill_port_size)
+        thread.start()
 
 
 class TradesTab(QWidget):

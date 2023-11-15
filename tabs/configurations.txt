@@ -1,0 +1,2 @@
+File_path:C:/Users/ramosd/Desktop/Personal Files/Binance Export - Aug 2023.xlsx
+Port_size:75.6
