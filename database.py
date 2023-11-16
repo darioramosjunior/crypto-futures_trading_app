@@ -25,4 +25,9 @@ class Database:
                 net_gain REAL, percent_gain REAL)''')
         self.connection.commit()
 
+    def create_trades_results_table(self):
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS trades_results (id INTEGER PRIMARY KEY, exit_date TEXT, 
+                port_effect_percent REAL)''')
+        self.connection.commit()
+
 

@@ -8,6 +8,7 @@ from database import Database
 database = Database()
 database.create_watchlist_table()
 database.create_trades_table()
+database.create_trades_results_table()
 database.connection.close()
 
 
@@ -16,7 +17,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Crypto Futures Trading App")
-        self.setMinimumSize(1250, 600)
+        self.setMinimumSize(1250, 700)
 
         # Create a central widget
         central_widget = QWidget()
@@ -30,9 +31,9 @@ class MainWindow(QMainWindow):
 
         # Create and add tabs to the tab widget
         watchlist_tab = WatchlistTab()
-        analytics_tab = AnalyticsTab()
         news_tab = NewsTab()
         trades_tab = TradesTab()
+        analytics_tab = AnalyticsTab(trades_tab.table_widget)
 
         tab_widget.addTab(watchlist_tab, "Watchlist")
         tab_widget.addTab(news_tab, "News")

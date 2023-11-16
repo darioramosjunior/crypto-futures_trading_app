@@ -6,7 +6,7 @@ import pandas as pd
 # orig_df = pd.read_excel(path, sheet_name="sheet1")
 # orig_df = pd.read_excel(path)
 
-trades = []
+# trades = []
 
 
 class Trade:
@@ -59,7 +59,7 @@ def get_filtered_row_values(row):
     return row_dict
 
 
-def calculate_trades(df):
+def calculate_trades(df, trades):
     rows_to_delete = []
 
     if not df.empty:
@@ -157,7 +157,7 @@ def calculate_trades(df):
                         trades.append(Trade(entry_date, exit_date, ticker, trade_type, axp, aep, total_return,
                                             percent_return, total_entry_quantity, cost, proceed))
 
-                        print("=============================================")
+                        # print("=============================================")
                         break
 
         return rows_to_delete
@@ -166,6 +166,7 @@ def calculate_trades(df):
 
 
 def get_trades(path):
+    trades_list = []
     file_path = rf"{path}"
     orig_df = pd.read_excel(file_path)
 
@@ -177,10 +178,11 @@ def get_trades(path):
             condition = False
             break
 
-        current_rows_to_delete = calculate_trades(orig_df)
+        current_rows_to_delete = calculate_trades(orig_df, trades_list)
         orig_df = orig_df.drop(current_rows_to_delete)
 
-    return trades
+    return trades_list
+
 
 
 

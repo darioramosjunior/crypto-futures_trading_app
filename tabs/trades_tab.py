@@ -51,7 +51,7 @@ def get_port_size():
 class FileSelector(QWidget):
     def __init__(self, trades_tab_object):
         super().__init__()
-        # Need to pass TradesTab instance as argument to access its fill_rows_table_widget() method
+        # Need to pass TradesTab instance as argument to access its methoda
         self.trades_tab = trades_tab_object
 
         layout = QHBoxLayout()
@@ -95,24 +95,26 @@ class FileSelector(QWidget):
             self.label.setText(f"{file_name}")
 
     def get_trades_list(self):
-        print(self.label.text())
         trades = get_trades(path=self.label.text())
         trades.reverse()
-        for trade in trades:
-            print(trade.symbol)
 
         if trades:
             self.trades_tab.clear_table()
             self.trades_tab.clear_trades_db()
+            self.trades_tab.clear_trades_results_db()
 
             # Execute trades tab objects' fill_rows_table_widget method
             self.trades_tab.store_to_database(trades)
             self.trades_tab.fill_rows_table_widget()
+            self.calculate_port_effects()
 
     def calculate_port_effects(self):
         if self.start_port.text() != "":
             start_port = float(self.start_port.text())
             self.trades_tab.calc_port_effects(start_port)
+        else:
+            self.trades_tab.clear_trades_results_db()
+            self.trades_tab.clear_new_ports_port_effects()
 
     def save_file_path(self):
         path = self.label.text()
@@ -232,22 +234,52 @@ class TradesTab(QWidget):
         net_gain_column = 9
         new_port_column = 11
         port_effect_column = 12
+        exit_date_column = 1
         old_port = start_port
+        database = Database()
+
         for row in range(self.table_widget.rowCount()):
             # Get net_gain for particular 'row'
             net_gain = float(self.table_widget.item(row, net_gain_column).text())
             new_port = old_port + net_gain
 
-            # Create cell items for
+            # Create cell items for New Port
             new_port_item = QTableWidgetItem("{:.3f}".format(new_port))
             new_port_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table_widget.setItem(row, new_port_column, new_port_item)
 
+            # Create cell items for Port Effect %
             port_effect = (net_gain / old_port) * 100
             port_effect_item = QTableWidgetItem("{:.2f}".format(port_effect))
             port_effect_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table_widget.setItem(row, port_effect_column, port_effect_item)
 
             old_port = new_port
+
+            # Add or modify trades_results database
+            exit_date = self.table_widget.item(row, exit_date_column).text()
+            data_to_insert = (row, exit_date, port_effect)
+            database.cursor.execute("INSERT OR REPLACE INTO trades_results (id, exit_date, port_effect_percent) "
+                                    "VALUES (?,?,?)", data_to_insert)
+
+        database.connection.commit()
+        database.connection.close()
+
+    def clear_trades_results_db(self):
+        database = Database()
+        database.cursor.execute("DELETE from trades_results")
+        database.connection.commit()
+        database.connection.close()
+
+    def clear_new_ports_port_effects(self):
+        new_port_column = 11
+        port_effect_column = 12
+        for row in range(self.table_widget.rowCount()):
+            new_port_item = QTableWidgetItem("")
+            self.table_widget.setItem(row, new_port_column, new_port_item)
+
+            port_effect_item = QTableWidgetItem("")
+            self.table_widget.setItem(row, port_effect_column, port_effect_item)
+
 
 
