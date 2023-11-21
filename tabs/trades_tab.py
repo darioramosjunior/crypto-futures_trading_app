@@ -73,6 +73,7 @@ class FileSelector(QWidget):
         self.label.textChanged.connect(self.save_file_path)
         self.start_port.textChanged.connect(self.calculate_port_effects)
         self.start_port.textChanged.connect(self.save_port_size)
+        self.start_port.textChanged.connect(self.start_port_updated_thread)
 
         layout.addWidget(self.button)
         layout.addWidget(self.label, stretch=2)
@@ -142,14 +143,23 @@ class FileSelector(QWidget):
         thread = threading.Thread(target=self.fill_port_size)
         thread.start()
 
+    def start_port_updated(self):
+        start_port = float(self.start_port.text())
+        self.trades_tab.start_port_updated(start_port)
+
+    def start_port_updated_thread(self):
+        thread = threading.Thread(target=self.start_port_updated)
+        thread.start()
+
 
 class TradesTab(QWidget):
-    def __init__(self):
+    def __init__(self, main_window_object):
         super().__init__()
+        self.main_window = main_window_object
         layout = QVBoxLayout()
 
         # File Selector
-        file_selector = FileSelector(trades_tab_object=self)
+        self.file_selector = FileSelector(trades_tab_object=self)
 
         # Table Widget
         self.table_widget = QTableWidget()
@@ -160,7 +170,7 @@ class TradesTab(QWidget):
         self.table_widget.horizontalHeader().setStyleSheet("::section {background-color: #404040; color: white; "
                                                            "font-weight: bold;}")
 
-        layout.addWidget(file_selector)
+        layout.addWidget(self.file_selector)
         layout.addWidget(self.table_widget)
         self.fill_rows_table_widget()
 
@@ -281,5 +291,13 @@ class TradesTab(QWidget):
             port_effect_item = QTableWidgetItem("")
             self.table_widget.setItem(row, port_effect_column, port_effect_item)
 
+    def get_port_size(self):
+        if self.file_selector.start_port.text() != "":
+            start_port = float(self.file_selector.start_port.text())
+            return start_port
+        else:
+            pass
 
+    def start_port_updated(self, start_port):
+        self.main_window.update_analytics_start_port(start_port)
 

@@ -32,13 +32,13 @@ class MainWindow(QMainWindow):
         # Create and add tabs to the tab widget
         watchlist_tab = WatchlistTab()
         news_tab = NewsTab()
-        trades_tab = TradesTab()
-        analytics_tab = AnalyticsTab(trades_tab.table_widget)
+        trades_tab = TradesTab(main_window_object=self)
+        self.analytics_tab = AnalyticsTab(trades_tab.table_widget, trades_tab.get_port_size())
 
         tab_widget.addTab(watchlist_tab, "Watchlist")
         tab_widget.addTab(news_tab, "News")
         tab_widget.addTab(trades_tab, "Trades")
-        tab_widget.addTab(analytics_tab, "Performance")
+        tab_widget.addTab(self.analytics_tab, "Performance")
 
         # Style the tab bar to make tab titles visible
         tab_bar = tab_widget.tabBar()
@@ -92,6 +92,9 @@ class MainWindow(QMainWindow):
                 """)
 
         self.show()
+
+    def update_analytics_start_port(self, start_port):
+        self.analytics_tab.update_start_port(start_port)
 
 
 if __name__ == "__main__":
