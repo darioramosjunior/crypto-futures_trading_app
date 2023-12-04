@@ -1,3 +1,5 @@
+import threading
+
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QHBoxLayout, QComboBox, QPushButton, QTableWidget, \
     QHeaderView, QTableWidgetItem
 from PyQt6.QtGui import QIcon
@@ -75,7 +77,7 @@ class ScreenerTab(QWidget):
 
         self.set_default_values()
 
-    def get_top_oi(self):
+    def get_top_oi_thread(self):
         timeframe_selected = self.oi_tf_combobox.currentText()
         print(timeframe_selected)
 
@@ -89,6 +91,10 @@ class ScreenerTab(QWidget):
         oi_values = self.oi_values.get_top_oi_values(top_oi_coins)
 
         self.display_top_oi_details(oi_values)
+
+    def get_top_oi(self):
+        thread = threading.Thread(target=self.get_top_oi_thread)
+        thread.start()
 
     def display_top_oi_details(self, oi_values):
         # Need to reset table contents
