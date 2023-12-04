@@ -3,6 +3,7 @@ from tabs.watchlist_tab import WatchlistTab
 from tabs.analytics_tab import AnalyticsTab
 from tabs.news_tab import NewsTab
 from tabs.trades_tab import TradesTab
+from screener_tab import ScreenerTab
 from database import Database
 
 database = Database()
@@ -31,11 +32,13 @@ class MainWindow(QMainWindow):
 
         # Create and add tabs to the tab widget
         watchlist_tab = WatchlistTab()
+        screener_tab = ScreenerTab()
         news_tab = NewsTab()
         trades_tab = TradesTab(main_window_object=self)
         self.analytics_tab = AnalyticsTab(trades_tab.table_widget, trades_tab.get_port_size())
 
         tab_widget.addTab(watchlist_tab, "Watchlist")
+        tab_widget.addTab(screener_tab, "Screener")
         tab_widget.addTab(news_tab, "News")
         tab_widget.addTab(trades_tab, "Trades")
         tab_widget.addTab(self.analytics_tab, "Performance")
