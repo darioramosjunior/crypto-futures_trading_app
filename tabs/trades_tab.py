@@ -51,7 +51,7 @@ def get_port_size():
 class FileSelector(QWidget):
     def __init__(self, trades_tab_object):
         super().__init__()
-        # Need to pass TradesTab instance as argument to access its methoda
+        # Need to pass TradesTab instance as argument to access its methods
         self.trades_tab = trades_tab_object
 
         layout = QHBoxLayout()
@@ -169,6 +169,7 @@ class TradesTab(QWidget):
         self.table_widget.setHorizontalHeaderLabels(table_headers)
         self.table_widget.horizontalHeader().setStyleSheet("::section {background-color: #404040; color: white; "
                                                            "font-weight: bold;}")
+        self.table_widget.verticalHeader().hide()
 
         layout.addWidget(self.file_selector)
         layout.addWidget(self.table_widget)

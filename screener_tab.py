@@ -17,7 +17,7 @@ def format_large_number(number):
     elif abs(number) >= 1e3:
         return f'{number / 1e3:.2f} K'
     else:
-        return str(number)
+        return f'{number:.2f}'
 
 
 class ScreenerTab(QWidget):
@@ -26,8 +26,8 @@ class ScreenerTab(QWidget):
         main_layout = QHBoxLayout()
         self.setLayout(main_layout)
         self.oi_values = OIValues()
-        self.timeframe_dict = {'15m': ('5m', 3), '30m': ('5m', 6), '1H': ('5m', 12), '4H': ('15m', 16),
-                               '1D': ('2h', 12), '1W': ('1d', 7)}
+        self.oi_timeframe_dict = {'15m': ('5m', 3), '30m': ('5m', 6), '1H': ('5m', 12), '4H': ('15m', 16),
+                                  '1D': ('2h', 12), '1W': ('1d', 7)}
 
         # Left Layout
         left_layout = QVBoxLayout()
@@ -36,11 +36,13 @@ class ScreenerTab(QWidget):
         oi_header = WidgetsHLayout()
 
         oi_label = QLabel("Top Open Interest")
+        oi_label.setStyleSheet("font-weight: bold;")
         self.oi_tf_combobox = QComboBox()
         oi_tf_options = ("15m", "30m", "1H", "4H", "1D", "1W")
         self.oi_tf_combobox.addItems(oi_tf_options)
-        oi_refresh_button = QPushButton()
-        oi_refresh_button.setIcon(QIcon("images/refresh_icon.jpg"))
+        self.oi_tf_combobox.setStyleSheet("font-weight: bold;")
+        oi_refresh_button = QPushButton("-- SCAN --")
+        oi_refresh_button.setStyleSheet("color: white; font-weight: bold;")
 
         self.oi_table = QTableWidget()
         self.oi_table.setColumnCount(3)
@@ -68,9 +70,37 @@ class ScreenerTab(QWidget):
         # Right layout
         right_layout = QVBoxLayout()
 
-        right_label = QLabel("Right Label")
+        top_gain_lose_header = WidgetsHLayout()
 
-        right_layout.addWidget(right_label)
+        self.gain_lose_combobox = QComboBox()
+        gain_lose_options = ("Top Gainers", "Top Losers")
+        self.gain_lose_combobox.addItems(gain_lose_options)
+        self.gain_lose_combobox.setStyleSheet("font-weight: bold;")
+        self.gain_lose_tf_combobox = QComboBox()
+        gain_lose_tf_combobox_options = ("15m", "30m", "1H", "4H", "1D", "1W")
+        self.gain_lose_tf_combobox.addItems(gain_lose_tf_combobox_options)
+        gain_lose_refresh_button = QPushButton("-- SCAN --")
+        gain_lose_refresh_button.setStyleSheet("color: white; font-weight: bold;")
+
+        top_gain_lose_header.add_widget(self.gain_lose_combobox)
+        top_gain_lose_header.add_widget(self.gain_lose_tf_combobox)
+        top_gain_lose_header.add_widget(gain_lose_refresh_button)
+
+        self.gain_lose_table = QTableWidget()
+        self.gain_lose_table.setColumnCount(3)
+        self.gain_lose_table.setRowCount(18)
+        gain_lose_table_labels = ["Coin", "Current Price", "Price Change (%)"]
+        self.gain_lose_table.setHorizontalHeaderLabels(gain_lose_table_labels)
+        self.gain_lose_table.horizontalHeader().setStyleSheet("::section {background-color: #404040; color: white; "
+                                                              "font-weight: bold;}")
+        self.gain_lose_table.verticalHeader().hide()
+
+        right_layout.addWidget(top_gain_lose_header)
+        right_layout.addWidget(self.gain_lose_table)
+
+        # Set column stretch to make them equally fill the available space
+        for i in range(3):
+            self.gain_lose_table.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
 
         main_layout.addLayout(left_layout, stretch=1)
         main_layout.addLayout(right_layout, stretch=1)
@@ -81,7 +111,7 @@ class ScreenerTab(QWidget):
         timeframe_selected = self.oi_tf_combobox.currentText()
         print(timeframe_selected)
 
-        period, limit = self.timeframe_dict[timeframe_selected]
+        period, limit = self.oi_timeframe_dict[timeframe_selected]
 
         self.oi_values.get_coin_list()
         self.oi_values.get_oi_values(period=period, limit=limit)
@@ -126,6 +156,8 @@ class ScreenerTab(QWidget):
 
     def set_default_values(self):
         self.oi_tf_combobox.setCurrentIndex(2)
+        self.gain_lose_combobox.setCurrentIndex(0)
+        self.gain_lose_tf_combobox.setCurrentIndex(2)
 
 
 class WidgetsHLayout(QWidget):
