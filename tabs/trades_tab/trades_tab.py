@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFileDialog, QTableWidget, QHBoxLayout, QLineEdit, \
     QTableWidgetItem, QLabel
 from PyQt6.QtCore import Qt
-from trades import get_trades
+from .trades_script import get_trades
 from database import Database
 import threading
 
@@ -9,18 +9,18 @@ file_path = ""
 
 
 def store_file_path(path):
-    with open("tabs/configurations.txt", 'r') as file:
+    with open("configurations.txt", 'r') as file:
         content = file.readlines()
     for index, line in enumerate(content):
         if "File_path:" in line:
             content[index] = f"File_path:{path}" + "\n"
 
-    with open("tabs/configurations.txt", 'w') as file:
+    with open("configurations.txt", 'w') as file:
         file.writelines(content)
 
 
 def get_file_path():
-    with open("tabs/configurations.txt", 'r') as file:
+    with open("configurations.txt", 'r') as file:
         content = file.readlines()
     for line in content:
         if "File_path:" in line:
@@ -29,18 +29,18 @@ def get_file_path():
 
 
 def store_port_size(port_size):
-    with open("tabs/configurations.txt", 'r') as file:
+    with open("configurations.txt", 'r') as file:
         content = file.readlines()
     for index, line in enumerate(content):
         if "Port_size:" in line:
             content[index] = f"Port_size:{port_size}" + "\n"
 
-    with open("tabs/configurations.txt", 'w') as file:
+    with open("configurations.txt", 'w') as file:
         file.writelines(content)
 
 
 def get_port_size():
-    with open("tabs/configurations.txt", 'r') as file:
+    with open("configurations.txt", 'r') as file:
         content = file.readlines()
     for line in content:
         if "Port_size:" in line:

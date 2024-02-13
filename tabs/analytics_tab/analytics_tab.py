@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QHBoxLayout, QGraphicsSimpleTextItem
 from database import Database
 from PyQt6.QtCharts import QChart, QPieSeries, QChartView, QLineSeries, QValueAxis
-from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor, QPainter, QFont, QPen
 
 

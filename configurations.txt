@@ -1,2 +1,2 @@
 File_path:C:/Users/ramosd/Desktop/Python Projects/Personal Projects/Desktop_TradingApp/Binance Export - Aug 2023.xlsx
-Port_size:85.6
+Port_size:75.6

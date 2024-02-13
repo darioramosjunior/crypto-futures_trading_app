@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from watchlist_item import WatchlistItem, Columns
+from .watchlist_item import WatchlistItem, Columns
 
 
 class WatchlistTab(QWidget):

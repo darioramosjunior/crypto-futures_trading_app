@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton
 from database import Database
-from coin_prices_script import get_coins_data
+from .coin_prices_script import get_coins_data
 import threading
 
 

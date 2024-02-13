@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout
-from tabs.watchlist_tab import WatchlistTab
-from tabs.analytics_tab import AnalyticsTab
-from tabs.news_tab import NewsTab
-from tabs.trades_tab import TradesTab
-from screener_tab import ScreenerTab
+from tabs.watchlist_tab.watchlist_tab import WatchlistTab
+from tabs.analytics_tab.analytics_tab import AnalyticsTab
+from tabs.news_tab.news_tab import NewsTab
+from tabs.trades_tab.trades_tab import TradesTab
+from tabs.screener_tab.screener_tab import ScreenerTab
 from database import Database
 
 database = Database()

@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QHBoxLayout, QComboBox
     QHeaderView, QTableWidgetItem
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt
-from OI_screener import OIValues
-from Top_GainLose_Screener import TopGainersLosers
+from .oi_screener import OIValues
+from .top_gainLose_screener import TopGainersLosers
 from itertools import islice
 
 
@@ -116,6 +116,16 @@ class ScreenerTab(QWidget):
         self.set_default_values()
 
     def get_top_oi_thread(self):
+        """
+        This function is used to get the top open interest for a given timeframe and display them in the GUI.
+
+        Parameters:
+        timeframe_selected (str): The timeframe selected by the user from the drop-down menu.
+
+        Returns:
+        None
+
+        """
         timeframe_selected = self.oi_tf_combobox.currentText()
         # print(timeframe_selected)
 
@@ -134,7 +144,18 @@ class ScreenerTab(QWidget):
         thread = threading.Thread(target=self.get_top_oi_thread)
         thread.start()
 
-    def display_top_oi_details(self, oi_values):
+    def display_top_oi_details(self, oi_values: dict):
+        """
+        This function is used to display the top open interest values in the GUI.
+
+        Parameters:
+        oi_values (dict): A dictionary containing the open interest values for each coin. The dictionary is in the form
+        of {coin_name: {OI, OI_change, OI_change_rate}}.
+
+        Returns:
+        None
+
+        """
         # Need to reset table contents
         self.oi_table.setRowCount(0)
         self.oi_table.setRowCount(18)
@@ -167,32 +188,38 @@ class ScreenerTab(QWidget):
         thread.start()
 
     def get_top_gain_lose_thread(self):
+        """
+        This function is used to get the top gainers and losers for a given timeframe and display them in the GUI.
+
+        Parameters:
+        timeframe_selected (str): The timeframe selected by the user from the drop-down menu.
+        top_selected (int): The index of the top selection (0 for gainers, 1 for losers)
+
+        Returns:
+        None
+
+        """
         timeframe_selected = self.gain_lose_tf_combobox.currentText()
-        print(timeframe_selected)
         top_selected = self.gain_lose_combobox.currentIndex()
-        print(top_selected)
 
         interval, limit = self.gain_lose_timeframe_dict[timeframe_selected]
-        print(interval, limit)
 
         self.price_changes.get_coin_list()
 
         self.price_changes.get_price_change_percent(interval, limit)
-        if top_selected == 0:               # Top gainers
+        if top_selected == 0:  # Top gainers
             top_gainer_coins = []
             top_gainers = self.price_changes.get_sorted_top_gainers()
             [top_gainer_coins.append(each[0]) for each in islice(top_gainers.items(), 18)]
             top_gainers_values = self.price_changes.get_price_values(top_gainer_coins)
 
-            # print(top_gainers_values)
             self.display_top_values_details(top_gainers_values)
-        else:                               # Top losers
+        else:  # Top losers
             top_loser_coins = []
             top_losers = self.price_changes.get_sorted_top_losers()
             [top_loser_coins.append(each[0]) for each in islice(top_losers.items(), 18)]
             top_loser_values = self.price_changes.get_price_values(top_loser_coins)
 
-            # print(top_loser_values)
             self.display_top_values_details(top_loser_values)
 
     def display_top_values_details(self, values_dict):
@@ -200,7 +227,7 @@ class ScreenerTab(QWidget):
         self.gain_lose_table.setRowCount(0)
         self.gain_lose_table.setRowCount(18)
 
-        # Get top gain/lose selected
+        # Get top gain/lose selection
         top_selected = self.gain_lose_combobox.currentIndex()
 
         row_index = 0
