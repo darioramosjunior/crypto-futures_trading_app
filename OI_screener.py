@@ -1,6 +1,5 @@
 import requests
 import threading
-from itertools import islice
 
 
 class OIValues:

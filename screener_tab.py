@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QWidget, QLabel, QHBoxLayout, QComboBox
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt
 from OI_screener import OIValues
+from Top_GainLose_Screener import TopGainersLosers
 from itertools import islice
 
 
@@ -26,8 +27,11 @@ class ScreenerTab(QWidget):
         main_layout = QHBoxLayout()
         self.setLayout(main_layout)
         self.oi_values = OIValues()
+        self.price_changes = TopGainersLosers()
         self.oi_timeframe_dict = {'15m': ('5m', 3), '30m': ('5m', 6), '1H': ('5m', 12), '4H': ('15m', 16),
                                   '1D': ('2h', 12), '1W': ('1d', 7)}
+        self.gain_lose_timeframe_dict = {'15m': ('5m', 3), '30m': ('5m', 6), '1H': ('5m', 12), '4H': ('15m', 16),
+                                         '1D': ('2h', 12), '1W': ('1d', 7)}
 
         # Left Layout
         left_layout = QVBoxLayout()
@@ -82,6 +86,10 @@ class ScreenerTab(QWidget):
         gain_lose_refresh_button = QPushButton("-- SCAN --")
         gain_lose_refresh_button.setStyleSheet("color: white; font-weight: bold;")
 
+        gain_lose_refresh_button.clicked.connect(self.get_top_gain_lose)
+        self.gain_lose_tf_combobox.currentIndexChanged.connect(self.get_top_gain_lose)
+        self.gain_lose_combobox.currentIndexChanged.connect(self.get_top_gain_lose)
+
         top_gain_lose_header.add_widget(self.gain_lose_combobox)
         top_gain_lose_header.add_widget(self.gain_lose_tf_combobox)
         top_gain_lose_header.add_widget(gain_lose_refresh_button)
@@ -109,7 +117,7 @@ class ScreenerTab(QWidget):
 
     def get_top_oi_thread(self):
         timeframe_selected = self.oi_tf_combobox.currentText()
-        print(timeframe_selected)
+        # print(timeframe_selected)
 
         period, limit = self.oi_timeframe_dict[timeframe_selected]
 
@@ -133,7 +141,7 @@ class ScreenerTab(QWidget):
 
         row_index = 0
         for outer_key, inner_dict in oi_values.items():
-            print(outer_key, inner_dict)
+            # print(outer_key, inner_dict)
 
             oi = format_large_number(float(inner_dict["OI"]))
             oi_change = format_large_number(float(inner_dict["OI_change"]))
@@ -151,6 +159,74 @@ class ScreenerTab(QWidget):
             self.oi_table.setItem(row_index, 0, column0)
             self.oi_table.setItem(row_index, 1, column1)
             self.oi_table.setItem(row_index, 2, column2)
+
+            row_index = row_index + 1
+
+    def get_top_gain_lose(self):
+        thread = threading.Thread(target=self.get_top_gain_lose_thread)
+        thread.start()
+
+    def get_top_gain_lose_thread(self):
+        timeframe_selected = self.gain_lose_tf_combobox.currentText()
+        print(timeframe_selected)
+        top_selected = self.gain_lose_combobox.currentIndex()
+        print(top_selected)
+
+        interval, limit = self.gain_lose_timeframe_dict[timeframe_selected]
+        print(interval, limit)
+
+        self.price_changes.get_coin_list()
+
+        self.price_changes.get_price_change_percent(interval, limit)
+        if top_selected == 0:               # Top gainers
+            top_gainer_coins = []
+            top_gainers = self.price_changes.get_sorted_top_gainers()
+            [top_gainer_coins.append(each[0]) for each in islice(top_gainers.items(), 18)]
+            top_gainers_values = self.price_changes.get_price_values(top_gainer_coins)
+
+            # print(top_gainers_values)
+            self.display_top_values_details(top_gainers_values)
+        else:                               # Top losers
+            top_loser_coins = []
+            top_losers = self.price_changes.get_sorted_top_losers()
+            [top_loser_coins.append(each[0]) for each in islice(top_losers.items(), 18)]
+            top_loser_values = self.price_changes.get_price_values(top_loser_coins)
+
+            # print(top_loser_values)
+            self.display_top_values_details(top_loser_values)
+
+    def display_top_values_details(self, values_dict):
+        # Need to reset table contents
+        self.gain_lose_table.setRowCount(0)
+        self.gain_lose_table.setRowCount(18)
+
+        # Get top gain/lose selected
+        top_selected = self.gain_lose_combobox.currentIndex()
+
+        row_index = 0
+
+        for outer_key, inner_dict in values_dict.items():
+            # print(outer_key, inner_dict)
+
+            current_price = str(inner_dict['Current_price'])
+            if top_selected == 0:                   # Top gainers
+                price_change_rate = float(inner_dict['Up_price_change'])
+            else:                                   # Top losers
+                price_change_rate = float(inner_dict['Down_price_change'])
+
+            price_change_rate = "{:.2f}".format(price_change_rate)
+
+            column0 = QTableWidgetItem(outer_key)
+            column1 = QTableWidgetItem(current_price)
+            column2 = QTableWidgetItem(f"{price_change_rate}%")
+
+            column0.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            column1.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            column2.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            self.gain_lose_table.setItem(row_index, 0, column0)
+            self.gain_lose_table.setItem(row_index, 1, column1)
+            self.gain_lose_table.setItem(row_index, 2, column2)
 
             row_index = row_index + 1
 
