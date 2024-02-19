@@ -168,20 +168,24 @@ def calculate_trades(df, trades):
 def get_trades(path):
     trades_list = []
     file_path = rf"{path}"
-    orig_df = pd.read_excel(file_path)
 
-    condition = True
-    while condition:
-        num_rows = len(orig_df)
+    try:
+        orig_df = pd.read_excel(file_path)
 
-        if not (num_rows > 2):
-            condition = False
-            break
+        condition = True
+        while condition:
+            num_rows = len(orig_df)
 
-        current_rows_to_delete = calculate_trades(orig_df, trades_list)
-        orig_df = orig_df.drop(current_rows_to_delete)
+            if not (num_rows > 2):
+                condition = False
+                break
 
-    return trades_list
+            current_rows_to_delete = calculate_trades(orig_df, trades_list)
+            orig_df = orig_df.drop(current_rows_to_delete)
+
+        return trades_list
+    except FileNotFoundError:
+        return None
 
 
 

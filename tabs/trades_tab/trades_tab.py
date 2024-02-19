@@ -97,9 +97,9 @@ class FileSelector(QWidget):
 
     def get_trades_list(self):
         trades = get_trades(path=self.label.text())
-        trades.reverse()
 
         if trades:
+            trades.reverse()
             self.trades_tab.clear_table()
             self.trades_tab.clear_trades_db()
             self.trades_tab.clear_trades_results_db()
@@ -108,6 +108,10 @@ class FileSelector(QWidget):
             self.trades_tab.store_to_database(trades)
             self.trades_tab.fill_rows_table_widget()
             self.calculate_port_effects()
+        else:
+            self.trades_tab.clear_table()
+            self.trades_tab.clear_trades_db()
+            self.trades_tab.clear_trades_results_db()
 
     def calculate_port_effects(self):
         if self.start_port.text() != "":
