@@ -41,6 +41,10 @@ class ScreenerTab(QWidget):
 
         oi_label = QLabel("Top Open Interest")
         oi_label.setStyleSheet("font-weight: bold;")
+        self.exchange_combobox1 = QComboBox()
+        exchange_options = ("BINANCE", "ByBit")
+        self.exchange_combobox1.addItems(exchange_options)
+        self.exchange_combobox1.setStyleSheet("font-weight: bold;")
         self.oi_tf_combobox = QComboBox()
         oi_tf_options = ("15m", "30m", "1H", "4H", "1D", "1W")
         self.oi_tf_combobox.addItems(oi_tf_options)
@@ -58,6 +62,7 @@ class ScreenerTab(QWidget):
         self.oi_table.verticalHeader().hide()
 
         oi_header.add_widget(oi_label)
+        oi_header.add_widget(self.exchange_combobox1)
         oi_header.add_widget(self.oi_tf_combobox)
         oi_header.add_widget(oi_refresh_button)
 
@@ -80,6 +85,9 @@ class ScreenerTab(QWidget):
         gain_lose_options = ("Top Gainers", "Top Losers")
         self.gain_lose_combobox.addItems(gain_lose_options)
         self.gain_lose_combobox.setStyleSheet("font-weight: bold;")
+        self.exchange_combobox2 = QComboBox()
+        self.exchange_combobox2.addItems(exchange_options)
+        self.exchange_combobox2.setStyleSheet("font-weight: bold;")
         self.gain_lose_tf_combobox = QComboBox()
         gain_lose_tf_combobox_options = ("15m", "30m", "1H", "4H", "1D", "1W")
         self.gain_lose_tf_combobox.addItems(gain_lose_tf_combobox_options)
@@ -91,6 +99,7 @@ class ScreenerTab(QWidget):
         self.gain_lose_combobox.currentIndexChanged.connect(self.get_top_gain_lose)
 
         top_gain_lose_header.add_widget(self.gain_lose_combobox)
+        top_gain_lose_header.add_widget(self.exchange_combobox2)
         top_gain_lose_header.add_widget(self.gain_lose_tf_combobox)
         top_gain_lose_header.add_widget(gain_lose_refresh_button)
 
@@ -261,6 +270,8 @@ class ScreenerTab(QWidget):
         self.oi_tf_combobox.setCurrentIndex(2)
         self.gain_lose_combobox.setCurrentIndex(0)
         self.gain_lose_tf_combobox.setCurrentIndex(2)
+        self.exchange_combobox1.setCurrentIndex(0)
+        self.exchange_combobox2.setCurrentIndex(0)
 
 
 class WidgetsHLayout(QWidget):
