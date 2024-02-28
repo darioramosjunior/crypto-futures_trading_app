@@ -5,6 +5,7 @@ from tabs.news_tab.news_tab import NewsTab
 from tabs.trades_tab.trades_tab import TradesTab
 from tabs.screener_tab.screener_tab import ScreenerTab
 from database import Database
+import gc
 
 database = Database()
 database.create_watchlist_table()
@@ -39,7 +40,7 @@ class MainWindow(QMainWindow):
 
         tab_widget.addTab(watchlist_tab, "Watchlist")
         tab_widget.addTab(screener_tab, "Screener")
-        tab_widget.addTab(news_tab, "News")
+        # tab_widget.addTab(news_tab, "News")
         tab_widget.addTab(trades_tab, "Trades")
         tab_widget.addTab(self.analytics_tab, "Performance")
 

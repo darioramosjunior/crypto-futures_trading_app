@@ -5,7 +5,6 @@ from PyQt6.QtCharts import QChart, QPieSeries, QChartView, QLineSeries, QValueAx
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor, QPainter, QFont, QPen, QPixmap, QLinearGradient
 from collections import defaultdict
-from threading import Thread
 
 
 class AnalyticsTab(QWidget):
@@ -25,6 +24,7 @@ class AnalyticsTab(QWidget):
         self.win_rate = 0
         self.ave_gain = 0
         self.ave_loss = 0
+        self.net_result = 0
 
         outer_layout = QHBoxLayout()
         left_layout = QVBoxLayout()
@@ -61,15 +61,22 @@ class AnalyticsTab(QWidget):
         self.show()
 
     def display_statistics(self):
-        statistics_title = QLabel("Statistics")
-        win_rate_label = QLabel("WIN_RATE")
-        ave_gain_label = QLabel("AVE_GAIN")
-        ave_loss_label = QLabel("AVE_LOSS")
+        net_return = sum(self.trade_results)
+        print(net_return)
+        performance = (net_return / self.start_port) * 100
+        statistics_title = QLabel(f"PERFORMANCE: {performance} %")
+        total_trades = QLabel(f"TOTAL TRADES: {self.total_trades}")
+        win_rate_label = QLabel(f"WIN RATE: {self.win_rate} %")
+        ave_gain_label = QLabel(f"AVERAGE GAIN: {self.ave_gain}")
+        ave_loss_label = QLabel(f"AVERAGE LOSS: {self.ave_loss}")
+        gain_loss_ratio = QLabel(f"GAIN / LOSS RATIO: {abs(self.ave_gain / self.ave_loss)}")
 
         self.third_quadrant_layout.addWidget(statistics_title)
+        self.third_quadrant_layout.addWidget(total_trades)
         self.third_quadrant_layout.addWidget(win_rate_label)
         self.third_quadrant_layout.addWidget(ave_gain_label)
         self.third_quadrant_layout.addWidget(ave_loss_label)
+        self.third_quadrant_layout.addWidget(gain_loss_ratio)
 
     def get_statistics(self):
         database = Database()
@@ -213,7 +220,7 @@ class BarChart(QWidget):
 
         chart = QChart()
         chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
-        chart.setTitle("Per Day Return")
+        chart.setTitle("Per Day Return (USD)")
         chart.setTitleBrush(QColor('white'))
         chart.setTitleFont(QFont("Helvetica", 12))
         background_brush = QBrush(QColor(70, 70, 70))
@@ -226,15 +233,15 @@ class BarChart(QWidget):
         [per_day_results.append(float(each[1])) for each in date_and_results]
 
         for date, value in date_and_results:
-            set = QBarSet("")
-            set.append([value])
+            bar_set = QBarSet("")
+            bar_set.append([value])
             if value < 0:
-                set.setColor(QColor(220, 0, 0))         # color red
-                set.setBorderColor(QColor(70, 70, 70))
+                bar_set.setColor(QColor(250, 0, 0))         # color red
+                bar_set.setBorderColor(QColor(70, 70, 70))
             else:
-                set.setColor(QColor(0, 220, 0))         # color green
-                set.setBorderColor(QColor(70, 70, 70))
-            series.append(set)
+                bar_set.setColor(QColor(0, 220, 0))         # color green
+                bar_set.setBorderColor(QColor(70, 70, 70))
+            series.append(bar_set)
 
         chart.addSeries(series)
 
